@@ -6,14 +6,14 @@
 <title>The Lookout</title>
 <style>
   :root{
-    --bg:#0b0f13; --bg2:#0e1318; --card:#141a20; --card2:#111620; --border:#232a32; --text:#eef1f4;
-    --muted:#8b94a1; --accent:#57d3c6; --accent-dim:rgba(87,211,198,.14);
-    --open:#e08a4e; --open-bg:rgba(224,138,78,.14);
-    --prog:#e0b84e; --prog-bg:rgba(224,184,78,.10);
-    --snooze:#8b94a1; --snooze-bg:rgba(139,148,161,.10);
-    --done:#4fbf8b; --done-bg:rgba(79,191,139,.10);
-    --danger:#e0704e;
-    --priority:#ef5b5b; --priority-bg:rgba(239,91,91,.14);
+    --bg:#12160f; --bg2:#171b11; --card:#1d2216; --card2:#171b11; --border:#33392a; --text:#f1ecdd;
+    --muted:#a39f86; --accent:#c97a4a; --accent-dim:rgba(201,122,74,.18);
+    --open:#cf8a3e; --open-bg:rgba(207,138,62,.16);
+    --prog:#c9a23f; --prog-bg:rgba(201,162,63,.14);
+    --snooze:#8a9478; --snooze-bg:rgba(138,148,120,.14);
+    --done:#7fa459; --done-bg:rgba(127,164,89,.16);
+    --danger:#a86a4a;
+    --priority:#a86a4a; --priority-bg:rgba(168,106,74,.16);
   }
   *{box-sizing:border-box;}
   body{
@@ -44,7 +44,7 @@
     border:none; background:transparent; color:var(--muted); font-size:12.5px; font-weight:600;
     padding:6px 12px; border-radius:7px; cursor:pointer; font-family:inherit;
   }
-  nav.tabs button.active{background:var(--accent); color:#04231f;}
+  nav.tabs button.active{background:var(--accent); color:#2c1409;}
 
   .date-bar{
     background:var(--bg2); border-bottom:1px solid var(--border);
@@ -80,11 +80,11 @@
   .toolbar{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:22px; flex-wrap:wrap;}
   .pills{display:flex; gap:8px; flex-wrap:wrap;}
   .pill{border:1px solid var(--border); background:var(--card); color:var(--muted); font-size:13px; font-weight:600; padding:7px 16px; border-radius:20px; cursor:pointer; font-family:inherit;}
-  .pill.active{background:var(--accent); color:#04231f; border-color:var(--accent);}
+  .pill.active{background:var(--accent); color:#2c1409; border-color:var(--accent);}
   .pill.mentions{border-color:var(--priority); color:var(--priority);}
-  .pill.mentions.active{background:var(--priority); color:#2a0b0b; border-color:var(--priority);}
+  .pill.mentions.active{background:var(--priority); color:#2c1409; border-color:var(--priority);}
   .pill-count{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; margin-left:3px;}
-  .btn-add{background:var(--accent); color:#04231f; border:none; border-radius:9px; padding:9px 18px; font-size:13.5px; font-weight:700; cursor:pointer; font-family:inherit;}
+  .btn-add{background:var(--accent); color:#2c1409; border:none; border-radius:9px; padding:9px 18px; font-size:13.5px; font-weight:700; cursor:pointer; font-family:inherit;}
 
   .mentions-banner{
     cursor:pointer; background:var(--priority-bg); color:var(--priority); border:1px solid var(--priority);
@@ -126,6 +126,12 @@
   .breakdown-list li{margin-bottom:4px;}
   .attach-detail-header{font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); font-weight:700; margin:6px 0 6px;}
   .attach-list{border-left:2px solid var(--border); padding-left:14px; margin-left:2px;}
+  .source-quote-label{font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); font-weight:700; margin:0 0 6px;}
+  .source-quote{
+    border-left:3px solid var(--accent); padding:10px 12px; margin:0 0 12px; background:var(--card);
+    border-radius:0 8px 8px 0; font-size:13px; color:var(--text); line-height:1.55; font-style:italic;
+    white-space:pre-wrap;
+  }
   .meta-block{display:flex; flex-direction:column; gap:5px;}
   .meta-row{font-size:12.5px; color:var(--muted);}
   .meta-row .meta-label{color:var(--text); font-weight:600; margin-right:5px;}
@@ -158,8 +164,8 @@
   .cal-day.pad{visibility:hidden;}
   .cal-day.has-items{background:var(--accent-dim); cursor:pointer;}
   .cal-day .dot{width:6px;height:6px;border-radius:50%;background:var(--accent); margin-top:3px;}
-  .cal-day.today{background:var(--accent); border-color:var(--accent); color:#04231f; font-weight:800; box-shadow:0 0 0 4px var(--accent-dim);}
-  .cal-day.today .dot{background:#04231f;}
+  .cal-day.today{background:var(--accent); border-color:var(--accent); color:#2c1409; font-weight:800; box-shadow:0 0 0 4px var(--accent-dim);}
+  .cal-day.today .dot{background:#2c1409;}
   .cal-day.today .daynum-wrap{position:relative;}
   .cal-day.selected{outline:2px solid var(--text);}
   .cal-legend{font-size:13.5px; color:var(--muted); margin-top:13px; display:flex; align-items:center; gap:7px;}
@@ -182,7 +188,7 @@
   .radio-row label{display:flex; align-items:center; gap:6px; color:var(--text); margin:0;}
   .date-range-row{display:flex; gap:10px;}
   .date-range-row > div{flex:1;}
-  form.add-form button{background:var(--accent); color:#04231f; border:none; border-radius:8px; padding:10px 16px; font-size:13.5px; font-weight:700; cursor:pointer; font-family:inherit; width:fit-content;}
+  form.add-form button{background:var(--accent); color:#2c1409; border:none; border-radius:8px; padding:10px 16px; font-size:13.5px; font-weight:700; cursor:pointer; font-family:inherit; width:fit-content;}
   .form-note{font-size:11.5px; color:var(--muted); margin-top:-4px;}
   h2.section-title{font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:0 0 12px;}
   :focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
@@ -208,7 +214,7 @@
   }
   .login-error{color:var(--danger); font-size:12.5px; min-height:16px; margin-bottom:10px; text-align:left;}
   .login-card button{
-    width:100%; background:var(--accent); color:#04231f; border:none; border-radius:9px; padding:11px;
+    width:100%; background:var(--accent); color:#2c1409; border:none; border-radius:9px; padding:11px;
     font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; margin-top:6px;
   }
 </style>
@@ -349,7 +355,7 @@
   </div><!-- /#app -->
 
 <script type="application/json" id="lookout-data">
-{"lastScanned": "2026-08-21T21:16:19Z", "items": [{"id": "gmail-s26-end-of-season-sale", "source": "gmail", "title": "S26 End of Season Sale — site flips to 30% off", "startDate": "2026-08-26", "endDate": null, "details": "Remaining S26 product moves to 30% off storewide on 8/26 when the site flips. Separate tabs in the attached file cover items going to 50% off and items held at full price to carry into S27.", "breakdown": ["Jeremy confirmed 3 tiers for all S26 product starting 8/26: 30% off (default), 50% off (per Colleen's spreadsheet tab), or held at full price to carry over into S27.", "Colleen flagged that a few retailer-exclusive tees were mistakenly included in an earlier version of the sheet — those have since been resolved and are now online, so the highlighted rows in the latest file no longer need special handling.", "Katie Hehl was looped in on 8/17 to help make sure everything's ready before the site flips on Wednesday 8/26."], "who": "Jeremy DeFilippis / Colleen Schwarzenbach", "link": "https://mail.google.com/mail/u/0/#inbox/19fc8376d1c39995", "attachment": "End of Season Sale.xlsx", "attachmentSummary": "S26 discount-tier spreadsheet: one tab for 50%-off product, one for full-price/carry-to-S27 product.", "attachmentDetails": ["Two tabs: a 50%-off product list and a full-price list of items being held to carry over into S27.", "An earlier version of the file flagged some retailer-exclusive tees by mistake — those are now resolved and online, so highlighted rows in the current version don't need action.", "No direct mention of Tyler by name inside the email text or file — he was included via CC, not called out personally."], "firstSeen": "2026-08-21", "directMention": false, "actionRequested": false}, {"id": "gmail-boxy-bogo-extension", "source": "gmail", "title": "Box Truck BOGO extended through 8/25", "startDate": "2026-08-25", "endDate": null, "details": "Box Truck's BOGO promotion was extended to run through 8/25 end of day (stays automatic, doesn't affect Jetty's main store) ahead of the S26 sale flip on 8/26. Flag any new S26 merch that goes on the truck so it gets tagged.", "breakdown": ["Colleen asked if Box Truck's BOGO promo (it runs as its own store) could keep going automatically for the rest of the box truck events, up until S26 drops to 30% off storewide on 8/26.", "David Bachowski confirmed he extended the BOGO end date to 8/25 end of day, and that it will stay automatic without affecting Jetty's main store.", "Open action: flag any new S26 merch that gets loaded onto the truck before 8/25 so it's tagged correctly for the promo."], "who": "Colleen Schwarzenbach / David Bachowski", "link": "https://mail.google.com/mail/u/0/#inbox/1a015bdabf2868fe", "attachment": "End of Season Sale.xlsx", "attachmentSummary": "Same S26 discount-tier file, attached here as backup context for the BOGO/30%-off timing.", "attachmentDetails": ["Same file as the main End of Season Sale item — 50%-off tab and full-price/carry-to-S27 tab.", "Attached mainly for reference on this thread; the real ask here is about the Box Truck BOGO date, not the file contents.", "No direct mention of Tyler by name in this thread — he was CC'd only."], "firstSeen": "2026-08-21", "directMention": false, "actionRequested": false}, {"id": "slack-brooke-moray-tee-restock", "source": "slack", "title": "Moray Tee restock for Flagship", "startDate": "2026-08-21", "endDate": null, "details": "Brooke asked if Flagship could get a Moray Tee restock today, ahead of the weekend, following a recent social push on the tee.", "breakdown": ["Brooke messaged the evening of 8/20 (she's out 8/21) asking for a Moray Tee restock at Flagship.", "Reasoning: Flagship just ran a social push on the Moray Tee, so having stock in-store for the weekend would help capture that traffic.", "As of the last scan, no reply confirming the restock was found in the thread — worth checking with the team directly."], "who": "Brooke Carty", "link": "https://jettylife.slack.com/archives/C0AUG6VB0ET/p1787271260168789", "firstSeen": "2026-08-21", "directMention": true, "actionRequested": true}]}
+{"lastScanned": "2026-08-21T22:46:42Z", "items": [{"id": "gmail-s26-end-of-season-sale", "source": "gmail", "title": "S26 End of Season Sale — site flips to 30% off", "startDate": "2026-08-26", "endDate": null, "details": "Remaining S26 product moves to 30% off storewide on 8/26 when the site flips. Separate tabs in the attached file cover items going to 50% off and items held at full price to carry into S27.", "breakdown": ["Jeremy confirmed 3 tiers for all S26 product starting 8/26: 30% off (default), 50% off (per Colleen's spreadsheet tab), or held at full price to carry over into S27.", "Colleen flagged that a few retailer-exclusive tees were mistakenly included in an earlier version of the sheet — those have since been resolved and are now online, so the highlighted rows in the latest file no longer need special handling.", "Katie Hehl was looped in on 8/17 to help make sure everything's ready before the site flips on Wednesday 8/26."], "who": "Jeremy DeFilippis / Colleen Schwarzenbach", "link": "https://mail.google.com/mail/u/0/#inbox/19fc8376d1c39995", "attachment": "End of Season Sale.xlsx", "attachmentSummary": "S26 discount-tier spreadsheet: one tab for 50%-off product, one for full-price/carry-to-S27 product.", "attachmentDetails": ["Two tabs: a 50%-off product list and a full-price list of items being held to carry over into S27.", "An earlier version of the file flagged some retailer-exclusive tees by mistake — those are now resolved and online, so highlighted rows in the current version don't need action.", "No direct mention of Tyler by name inside the email text or file — he was included via CC, not called out personally."], "firstSeen": "2026-08-21", "directMention": false, "actionRequested": false}, {"id": "gmail-boxy-bogo-extension", "source": "gmail", "title": "Box Truck BOGO extended through 8/25", "startDate": "2026-08-25", "endDate": null, "details": "Box Truck's BOGO promotion was extended to run through 8/25 end of day (stays automatic, doesn't affect Jetty's main store) ahead of the S26 sale flip on 8/26. Flag any new S26 merch that goes on the truck so it gets tagged.", "breakdown": ["Colleen asked if Box Truck's BOGO promo (it runs as its own store) could keep going automatically for the rest of the box truck events, up until S26 drops to 30% off storewide on 8/26.", "David Bachowski confirmed he extended the BOGO end date to 8/25 end of day, and that it will stay automatic without affecting Jetty's main store.", "Open action: flag any new S26 merch that gets loaded onto the truck before 8/25 so it's tagged correctly for the promo."], "who": "Colleen Schwarzenbach / David Bachowski", "link": "https://mail.google.com/mail/u/0/#inbox/1a015bdabf2868fe", "attachment": "End of Season Sale.xlsx", "attachmentSummary": "Same S26 discount-tier file, attached here as backup context for the BOGO/30%-off timing.", "attachmentDetails": ["Same file as the main End of Season Sale item — 50%-off tab and full-price/carry-to-S27 tab.", "Attached mainly for reference on this thread; the real ask here is about the Box Truck BOGO date, not the file contents.", "No direct mention of Tyler by name in this thread — he was CC'd only."], "firstSeen": "2026-08-21", "directMention": false, "actionRequested": false}, {"id": "slack-brooke-moray-tee-restock", "source": "slack", "title": "Moray Tee restock for Flagship", "startDate": "2026-08-21", "endDate": null, "details": "Brooke asked if Flagship could get a Moray Tee restock today, ahead of the weekend, following a recent social push on the tee.", "breakdown": ["Brooke messaged the evening of 8/20 (she's out 8/21) asking for a Moray Tee restock at Flagship.", "Reasoning: Flagship just ran a social push on the Moray Tee, so having stock in-store for the weekend would help capture that traffic.", "As of the last scan, no reply confirming the restock was found in the thread — worth checking with the team directly."], "who": "Brooke Carty", "link": "https://jettylife.slack.com/archives/C0AUG6VB0ET/p1787271260168789", "sourceQuote": "Hey Tyler,\n\nSorry for the late slack but I'm not in tomorrow and it's just on my mind.\n\nCan flagship get restock of the Moray Tee for tomorrow?\n\nI know we just did a social push so having it in the store for the weekend would be beneficial if possible!", "firstSeen": "2026-08-21", "directMention": true, "actionRequested": true}]}
 </script>
 
 <script>
@@ -519,7 +525,7 @@
     if(!searchQuery) return true;
     var bd = Array.isArray(item.breakdown) ? item.breakdown.join(' ') : (item.breakdown || '');
     var ad = Array.isArray(item.attachmentDetails) ? item.attachmentDetails.join(' ') : (item.attachmentDetails || '');
-    var hay = [item.title, item.details, item.who, item.link, item.attachment, item.attachmentSummary, bd, ad]
+    var hay = [item.title, item.details, item.who, item.link, item.attachment, item.attachmentSummary, item.sourceQuote, bd, ad]
       .filter(Boolean).join(' ').toLowerCase();
     return hay.indexOf(searchQuery) !== -1;
   }
@@ -717,6 +723,10 @@
         html += '<div class="attach-detail-header">📎 About ' + escapeHtml(item.attachment) + '</div>';
         html += '<ul class="breakdown-list attach-list">' + ad.map(function(b){ return '<li>' + escapeHtml(b) + '</li>'; }).join('') + '</ul>';
       }
+    }
+    if(item.sourceQuote){
+      html += '<div class="source-quote-label">💬 Original message' + (item.source==='slack' ? ' (saved before Slack\'s 90-day history limit)' : '') + '</div>';
+      html += '<div class="source-quote">' + escapeHtml(item.sourceQuote) + '</div>';
     }
     var meta = [];
     if(item.who) meta.push('<div class="meta-row"><span class="meta-label">From</span>' + escapeHtml(item.who) + '</div>');
