@@ -122,9 +122,57 @@
   .form-note{font-size:11.5px; color:var(--muted); margin-top:-4px;}
   h2.section-title{font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:0 0 12px;}
   :focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .login-screen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .login-card{
+    background:var(--card); border:1px solid var(--border); border-radius:16px; padding:36px 32px;
+    width:100%; max-width:340px; text-align:center;
+  }
+  .login-card .eyebrow{margin-bottom:6px;}
+  .login-card h1.headline{font-size:28px; margin-bottom:6px;}
+  .login-card .sub{color:var(--muted); font-size:13px; margin-bottom:26px;}
+  .login-field{margin-bottom:14px; text-align:left;}
+  .login-field label{font-size:12px; color:var(--muted); display:block; margin-bottom:6px;}
+  .login-field select, .login-field input{
+    width:100%; background:var(--card2); border:1px solid var(--border); border-radius:8px;
+    padding:10px 12px; color:var(--text); font-size:14px; font-family:inherit;
+  }
+  .login-field input[type=password]{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; letter-spacing:.3em; text-align:center; font-size:18px;
+  }
+  .login-error{color:var(--danger); font-size:12.5px; min-height:16px; margin-bottom:10px; text-align:left;}
+  .login-card button{
+    width:100%; background:var(--accent); color:#04231f; border:none; border-radius:9px; padding:11px;
+    font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; margin-top:6px;
+  }
 </style>
 </head>
 <body>
+  <div class="login-screen" id="login-screen">
+    <div class="login-card">
+      <div class="eyebrow">OPERATIONS RADAR</div>
+      <h1 class="headline">The Lookout</h1>
+      <div class="sub">Select your name and enter your PIN to continue.</div>
+      <form id="login-form">
+        <div class="login-field">
+          <label>User</label>
+          <select id="login-user">
+            <option value="tyler">Tyler</option>
+          </select>
+        </div>
+        <div class="login-field">
+          <label>6-digit PIN</label>
+          <input type="password" id="login-pin" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off">
+        </div>
+        <div class="login-error" id="login-error"></div>
+        <button type="submit">Unlock</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="app" style="display:none;">
   <div class="navbar">
     <nav class="tabs">
       <button data-page="overview" class="active">Overview</button>
@@ -221,13 +269,70 @@
     </div>
 
   </div>
+  </div><!-- /#app -->
 
 <script type="application/json" id="lookout-data">
-{"lastScanned": "2026-08-21T20:14:29Z", "items": [{"id": "gmail-dymo-case-51967644", "source": "gmail", "title": "Reply to DYMO case 51967644 if still needed", "startDate": null, "endDate": null, "details": "DYMO Consumer Service asked if you still need help with case 51967644 — reply directly or they may close it out.", "who": "DYMO Consumer Service (donotreply@newellco.com)", "link": "https://mail.google.com/mail/u/0/#inbox/1a0257b2e17b9fae", "firstSeen": "2026-08-21"}, {"id": "slack-njd-headwear-upcs", "source": "slack", "title": "Assign UPCs for NJD Pine Barrens & Crest hats", "startDate": null, "endDate": null, "details": "Anthony needs UPCs for the Pine Barrens Hat (NJDPINE-AH AHIVY) and Crest Hat (NJDCRES-AHGRN) for the NJD collab — he said it's a rush so he can submit to overseas production.", "who": "Anthony Hediger", "link": "https://jettylife.slack.com/archives/DM3REFY76/p1787245568024039", "firstSeen": "2026-08-21"}, {"id": "slack-moray-tee-restock", "source": "slack", "title": "Restock Moray Tee at Flagship", "startDate": "2026-08-21", "endDate": null, "details": "Brooke asked for a Moray Tee restock at Flagship in time for the weekend, following a social push on the style.", "who": "Brooke Carty", "link": "https://jettylife.slack.com/archives/C0AUG6VB0ET/p1787271260168789", "firstSeen": "2026-08-21"}]}
+{"lastScanned": null, "items": []}
 </script>
 
 <script>
 (function(){
+  // ---- login gate ----
+  // PINs are stored as SHA-256 hashes, not plaintext -- but this is a static page with
+  // no server, so treat this as a light "don't leave it open for a passerby" gate, not
+  // real security: anyone with the page source and a little effort can bypass it.
+  var USERS = {
+    tyler: { name: 'Tyler', pinHash: 'b7c3dcf3bb9a9eeefec921a03819e07c9bad0ce8dd371e530261c03cf7150869' }
+  };
+  var AUTH_KEY = 'lookoutAuthed';
+
+  function sha256Hex(str){
+    var enc = new TextEncoder().encode(str);
+    return crypto.subtle.digest('SHA-256', enc).then(function(buf){
+      return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+    });
+  }
+
+  function showApp(){
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = '';
+    initApp();
+  }
+
+  function tryAuthFromSession(){
+    try {
+      if(sessionStorage.getItem(AUTH_KEY) === '1'){ showApp(); return true; }
+    } catch(e){}
+    return false;
+  }
+
+  if(!tryAuthFromSession()){
+    var form = document.getElementById('login-form');
+    var errEl = document.getElementById('login-error');
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var userKey = document.getElementById('login-user').value;
+      var pin = document.getElementById('login-pin').value.trim();
+      var user = USERS[userKey];
+      if(!user || !/^[0-9]{6}$/.test(pin)){
+        errEl.textContent = 'Enter your 6-digit PIN.';
+        return;
+      }
+      sha256Hex(pin).then(function(hash){
+        if(user.pinHash === hash){
+          try { sessionStorage.setItem(AUTH_KEY, '1'); } catch(err){}
+          errEl.textContent = '';
+          showApp();
+        } else {
+          errEl.textContent = 'Incorrect PIN. Try again.';
+          document.getElementById('login-pin').value = '';
+          document.getElementById('login-pin').focus();
+        }
+      });
+    });
+  }
+
+  function initApp(){
   var LS_MANUAL = 'lookoutManualItems';
   var LS_OVERRIDES = 'lookoutOverrides';
 
@@ -369,6 +474,7 @@
         '<div class="card-top">' +
           '<span class="src-tag' + (item.manual?' manual':'') + '">' + SRC_ICON[item.source] + ' ' + SRC_LABEL[item.source] + '</span>' +
           (item.startDate ? '<span class="date-tag mono">' + niceRange(item) + '</span>' : '') +
+          (item.attachment ? '<span class="date-tag" title="Attachment on the source message">📎 ' + escapeHtml(item.attachment) + '</span>' : '') +
           '<span class="card-actions">' +
             (item.link ? '<button class="open-btn" type="button" title="Open source">↗</button>' : '') +
             '<button class="del-btn" type="button" title="Dismiss">×</button>' +
@@ -504,6 +610,7 @@
   document.getElementById('cal-today').addEventListener('click', function(){ calYear = now0.getFullYear(); calMonth = now0.getMonth(); renderCalendar(); });
 
   renderAll();
+  } // end initApp
 })();
 </script>
 </body>
