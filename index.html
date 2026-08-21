@@ -45,12 +45,13 @@
   .lede{color:var(--muted); font-size:14.5px; margin-bottom:28px;}
   .lede .mono{color:#a9b0bb;}
 
-  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px;}
+  .stats{display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:20px;}
   .stat{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 14px; cursor:pointer; transition:border-color .15s;}
   .stat:hover{border-color:#3a4450;}
   .stat.selected{border-color:var(--accent);}
   .stat .n{font-size:30px; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-variant-numeric:tabular-nums;}
   .stat .l{font-size:12px; color:var(--muted); margin-top:2px;}
+  .stat.all .n{color:var(--text);}
   .stat.open .n{color:var(--open);}
   .stat.prog .n{color:var(--prog);}
   .stat.snooze .n{color:var(--snooze);}
@@ -140,6 +141,7 @@
       <div class="lede">Pulled from Gmail and Slack, plus anything you add by hand · last scanned <span class="mono" id="scanned-date">—</span></div>
 
       <div class="stats">
+        <div class="stat all" data-status="all"><div class="n" id="stat-all">0</div><div class="l">All</div></div>
         <div class="stat open" data-status="open"><div class="n" id="stat-open">0</div><div class="l">Open</div></div>
         <div class="stat prog" data-status="in_progress"><div class="n" id="stat-prog">0</div><div class="l">In progress</div></div>
         <div class="stat snooze" data-status="snoozed"><div class="n" id="stat-snooze">0</div><div class="l">Snoozed</div></div>
@@ -319,7 +321,7 @@
 
   var SRC_LABEL = {gmail:'GMAIL', slack:'SLACK', manual:'MANUAL'};
   var SRC_ICON = {gmail:'✉', slack:'#', manual:'✎'};
-  var STATUS_LABEL = {open:'Open', in_progress:'In progress', snoozed:'Snoozed', done:'Done'};
+  var STATUS_LABEL = {all:'All', open:'Open', in_progress:'In progress', snoozed:'Snoozed', done:'Done'};
 
   function allItems(){
     return scanItems.concat(manualItems).filter(function(i){ return !isDismissed(i.id); });
@@ -328,6 +330,7 @@
   function renderStats(bySource){
     var counts = {open:0, in_progress:0, snoozed:0, done:0};
     bySource.forEach(function(i){ counts[statusOf(i.id)] = (counts[statusOf(i.id)]||0) + 1; });
+    document.getElementById('stat-all').textContent = bySource.length;
     document.getElementById('stat-open').textContent = counts.open;
     document.getElementById('stat-prog').textContent = counts.in_progress;
     document.getElementById('stat-snooze').textContent = counts.snoozed;
@@ -341,7 +344,10 @@
     var header = document.getElementById('list-header');
     var listEl = document.getElementById('item-list');
     var shown;
-    if(statusFilter){
+    if(statusFilter === 'all'){
+      shown = items.slice();
+      header.textContent = 'ALL (' + shown.length + ')';
+    } else if(statusFilter){
       shown = items.filter(function(i){ return statusOf(i.id) === statusFilter; });
       header.textContent = STATUS_LABEL[statusFilter].toUpperCase() + ' (' + shown.length + ')';
     } else {
