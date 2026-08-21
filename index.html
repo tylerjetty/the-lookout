@@ -42,8 +42,15 @@
     font-family:Georgia,'Times New Roman',serif; font-size:44px; font-weight:700; margin:0 0 14px; color:var(--text);
     text-wrap:balance;
   }
-  .lede{color:var(--muted); font-size:14.5px; margin-bottom:28px;}
+  .lede{color:var(--muted); font-size:14.5px; margin-bottom:20px;}
   .lede .mono{color:#a9b0bb;}
+
+  .today-pill{
+    display:inline-flex; align-items:center; gap:8px; background:var(--accent-dim); color:var(--accent);
+    border:1px solid var(--accent); font-weight:700; font-size:13.5px; padding:8px 14px 8px 12px;
+    border-radius:20px; margin-bottom:18px;
+  }
+  .today-pill .dot{width:6px; height:6px; border-radius:50%; background:var(--accent); flex-shrink:0;}
 
   .stats{display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:20px;}
   .stat{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 14px; cursor:pointer; transition:border-color .15s;}
@@ -75,8 +82,24 @@
   .card-actions button{background:transparent; border:none; color:var(--muted); cursor:pointer; font-size:15px; padding:0; line-height:1; font-family:inherit;}
   .card-actions button:hover{color:var(--text);}
   .card-actions .del-btn:hover{color:var(--danger);}
-  .card .title{font-size:16px; font-weight:700; margin:12px 0 4px;}
+  .title-row{display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin:12px 0 4px; cursor:pointer;}
+  .card .title{font-size:16px; font-weight:700;}
+  .expand-btn{background:transparent; border:none; color:var(--muted); cursor:pointer; padding:2px 4px; flex-shrink:0; font-family:inherit;}
+  .expand-btn:hover{color:var(--text);}
+  .expand-btn .chev{display:inline-block; font-size:12px; transition:transform .15s;}
+  .card.expanded .expand-btn .chev{transform:rotate(180deg);}
   .card .details{font-size:13.5px; color:var(--muted); line-height:1.5; margin-bottom:12px;}
+  .card-expand{display:none;}
+  .card.expanded .card-expand{display:block; margin:-2px 0 14px; padding:12px 14px; background:var(--card2); border:1px solid var(--border); border-radius:10px;}
+  .breakdown-list{margin:0 0 10px; padding-left:18px; font-size:13px; color:var(--text); line-height:1.6;}
+  .breakdown-list li{margin-bottom:4px;}
+  .meta-block{display:flex; flex-direction:column; gap:5px;}
+  .meta-row{font-size:12.5px; color:var(--muted);}
+  .meta-row .meta-label{color:var(--text); font-weight:600; margin-right:5px;}
+  .meta-row a{color:var(--accent); text-decoration:none; word-break:break-all;}
+  .meta-row a:hover{text-decoration:underline;}
+  .meta-empty{font-size:12.5px; color:var(--muted); font-style:italic;}
+  .card.flash{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-dim);}
   .status-row{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;}
   .status-pill{border:1px solid var(--border); background:transparent; color:var(--muted); font-size:12.5px; font-weight:600; padding:6px 13px; border-radius:20px; cursor:pointer; font-family:inherit;}
   .status-pill.sel.open{background:var(--open-bg); color:var(--open); border-color:var(--open);}
@@ -94,21 +117,27 @@
   .cal-head .month{font-weight:700; font-size:15px;}
   .cal-head .nav-btns{display:flex; gap:6px;}
   .cal-head .nav-btns button{border:1px solid var(--border); background:var(--card2); color:var(--text); border-radius:7px; width:28px; height:28px; cursor:pointer; font-size:13px; font-family:inherit;}
+  .cal-today-banner{font-size:12.5px; color:var(--accent); font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:7px;}
+  .cal-today-banner .dot{width:6px; height:6px; border-radius:50%; background:var(--accent); flex-shrink:0;}
   .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px;}
   .cal-dow{font-size:10.5px; color:var(--muted); text-align:center; padding-bottom:4px;}
   .cal-day{position:relative; aspect-ratio:1/1; border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:12.5px; cursor:default; border:1px solid transparent;}
   .cal-day.pad{visibility:hidden;}
-  .cal-day.today{border-color:var(--accent); font-weight:700;}
   .cal-day.has-items{background:var(--accent-dim); cursor:pointer;}
   .cal-day .dot{width:5px;height:5px;border-radius:50%;background:var(--accent); margin-top:2px;}
-  .cal-day.selected{outline:2px solid var(--accent);}
+  .cal-day.today{background:var(--accent); border-color:var(--accent); color:#04231f; font-weight:800; box-shadow:0 0 0 3px var(--accent-dim);}
+  .cal-day.today .dot{background:#04231f;}
+  .cal-day.today .daynum-wrap{position:relative;}
+  .cal-day.selected{outline:2px solid var(--text);}
   .cal-legend{font-size:11px; color:var(--muted); margin-top:10px; display:flex; align-items:center; gap:6px;}
   .cal-legend .dot{width:5px;height:5px;border-radius:50%;background:var(--accent);}
   #day-detail{margin-top:14px; border-top:1px solid var(--border); padding-top:12px; font-size:13px;}
   #day-detail .empty{color:var(--muted); font-size:12.5px; padding:0; text-align:left;}
-  #day-detail .item{margin-bottom:8px;}
+  #day-detail .item{margin-bottom:4px; padding:8px; border-radius:8px; cursor:pointer; transition:background .12s;}
+  #day-detail .item:hover{background:var(--card2);}
   #day-detail .item .t{font-weight:600;}
   #day-detail .item .d{color:var(--muted); font-size:12px; margin-top:2px;}
+  #day-detail .item .go{color:var(--accent); font-size:11px; margin-top:3px; font-weight:600;}
 
   form.add-form{display:grid; gap:12px; max-width:480px;}
   form.add-form label{font-size:12px; color:var(--muted); display:block; margin-bottom:4px;}
@@ -188,6 +217,7 @@
     <div class="page active" id="page-overview">
       <div class="eyebrow">OPERATIONS RADAR</div>
       <h1 class="headline">The Lookout</h1>
+      <div class="today-pill"><span class="dot"></span><span id="today-date">—</span></div>
       <div class="lede">Pulled from Gmail and Slack, plus anything you add by hand · last scanned <span class="mono" id="scanned-date">—</span></div>
 
       <div class="stats">
@@ -215,6 +245,7 @@
     <div class="page" id="page-calendar">
       <h2 class="section-title">Calendar</h2>
       <div class="panel cal-wrap">
+        <div class="cal-today-banner"><span class="dot"></span><span id="cal-today-banner-text">—</span></div>
         <div class="cal-head">
           <div class="month" id="cal-month"></div>
           <div class="nav-btns">
@@ -274,7 +305,7 @@
   </div><!-- /#app -->
 
 <script type="application/json" id="lookout-data">
-{"lastScanned": "2026-08-21T21:16:19Z", "items": [{"id": "gmail-s26-end-of-season-sale", "source": "gmail", "title": "S26 End of Season Sale — site flips to 30% off", "startDate": "2026-08-26", "endDate": null, "details": "Remaining S26 product moves to 30% off storewide on 8/26 when the site flips. Separate tabs in the attached file cover items going to 50% off and items held at full price to carry into S27.", "who": "Jeremy DeFilippis / Colleen Schwarzenbach", "link": "https://mail.google.com/mail/u/0/#inbox/19fc8376d1c39995", "attachment": "End of Season Sale.xlsx", "firstSeen": "2026-08-21"}, {"id": "gmail-boxy-bogo-extension", "source": "gmail", "title": "Box Truck BOGO extended through 8/25", "startDate": "2026-08-25", "endDate": null, "details": "Box Truck's BOGO promotion was extended to run through 8/25 end of day (stays automatic, doesn't affect Jetty's main store) ahead of the S26 sale flip on 8/26. Flag any new S26 merch that goes on the truck so it gets tagged.", "who": "Colleen Schwarzenbach / David Bachowski", "link": "https://mail.google.com/mail/u/0/#inbox/1a015bdabf2868fe", "attachment": "End of Season Sale.xlsx", "firstSeen": "2026-08-21"}, {"id": "slack-brooke-moray-tee-restock", "source": "slack", "title": "Moray Tee restock for Flagship", "startDate": "2026-08-21", "endDate": null, "details": "Brooke asked if Flagship could get a Moray Tee restock today, ahead of the weekend, following a recent social push on the tee.", "who": "Brooke Carty", "link": "https://jettylife.slack.com/archives/C0AUG6VB0ET/p1787271260168789", "firstSeen": "2026-08-21"}]}
+{"lastScanned": "2026-08-21T21:16:19Z", "items": [{"id": "gmail-s26-end-of-season-sale", "source": "gmail", "title": "S26 End of Season Sale — site flips to 30% off", "startDate": "2026-08-26", "endDate": null, "details": "Remaining S26 product moves to 30% off storewide on 8/26 when the site flips. Separate tabs in the attached file cover items going to 50% off and items held at full price to carry into S27.", "breakdown": ["Jeremy confirmed 3 tiers for all S26 product starting 8/26: 30% off (default), 50% off (per Colleen's spreadsheet tab), or held at full price to carry over into S27.", "Colleen flagged that a few retailer-exclusive tees were mistakenly included in an earlier version of the sheet — those have since been resolved and are now online, so the highlighted rows in the latest file no longer need special handling.", "Katie Hehl was looped in on 8/17 to help make sure everything's ready before the site flips on Wednesday 8/26."], "who": "Jeremy DeFilippis / Colleen Schwarzenbach", "link": "https://mail.google.com/mail/u/0/#inbox/19fc8376d1c39995", "attachment": "End of Season Sale.xlsx", "firstSeen": "2026-08-21"}, {"id": "gmail-boxy-bogo-extension", "source": "gmail", "title": "Box Truck BOGO extended through 8/25", "startDate": "2026-08-25", "endDate": null, "details": "Box Truck's BOGO promotion was extended to run through 8/25 end of day (stays automatic, doesn't affect Jetty's main store) ahead of the S26 sale flip on 8/26. Flag any new S26 merch that goes on the truck so it gets tagged.", "breakdown": ["Colleen asked if Box Truck's BOGO promo (it runs as its own store) could keep going automatically for the rest of the box truck events, up until S26 drops to 30% off storewide on 8/26.", "David Bachowski confirmed he extended the BOGO end date to 8/25 end of day, and that it will stay automatic without affecting Jetty's main store.", "Open action: flag any new S26 merch that gets loaded onto the truck before 8/25 so it's tagged correctly for the promo."], "who": "Colleen Schwarzenbach / David Bachowski", "link": "https://mail.google.com/mail/u/0/#inbox/1a015bdabf2868fe", "attachment": "End of Season Sale.xlsx", "firstSeen": "2026-08-21"}, {"id": "slack-brooke-moray-tee-restock", "source": "slack", "title": "Moray Tee restock for Flagship", "startDate": "2026-08-21", "endDate": null, "details": "Brooke asked if Flagship could get a Moray Tee restock today, ahead of the weekend, following a recent social push on the tee.", "breakdown": ["Brooke messaged the evening of 8/20 (she's out 8/21) asking for a Moray Tee restock at Flagship.", "Reasoning: Flagship just ran a social push on the Moray Tee, so having stock in-store for the weekend would help capture that traffic.", "As of the last scan, no reply confirming the restock was found in the thread — worth checking with the team directly."], "who": "Brooke Carty", "link": "https://jettylife.slack.com/archives/C0AUG6VB0ET/p1787271260168789", "firstSeen": "2026-08-21"}]}
 </script>
 
 <script>
@@ -375,6 +406,26 @@
     if(isNaN(d.getTime())) return iso;
     return d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
   }
+  function ordinalSuffix(n){
+    var v = n % 100;
+    if(v >= 11 && v <= 13) return 'th';
+    switch(n % 10){
+      case 1: return 'st';
+      case 2: return 'nd';
+      case 3: return 'rd';
+      default: return 'th';
+    }
+  }
+  function fullDateWithOrdinal(d){
+    var weekday = d.toLocaleDateString('en-US', {weekday:'long'});
+    var month = d.toLocaleDateString('en-US', {month:'long'});
+    var day = d.getDate();
+    var year = d.getFullYear();
+    return weekday + ', ' + month + ' ' + day + ordinalSuffix(day) + ' ' + year;
+  }
+  function localDateStr(d){
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
   function niceRange(item){
     if(!item.startDate) return '';
     if(item.endDate && item.endDate !== item.startDate) return niceDate(item.startDate) + ' – ' + niceDate(item.endDate);
@@ -394,7 +445,16 @@
     return out;
   }
 
-  var todayStr = new Date().toISOString().slice(0,10);
+  var todayStr = localDateStr(new Date());
+  var expandedIds = new Set();
+
+  function renderTodayDate(){
+    var text = fullDateWithOrdinal(new Date());
+    var ov = document.getElementById('today-date');
+    if(ov) ov.textContent = text;
+    var cal = document.getElementById('cal-today-banner-text');
+    if(cal) cal.textContent = 'Today is ' + text;
+  }
 
   var pages = {overview: document.getElementById('page-overview'), calendar: document.getElementById('page-calendar'), add: document.getElementById('page-add')};
   function goTab(name){
@@ -432,6 +492,30 @@
 
   function allItems(){
     return scanItems.concat(manualItems).filter(function(i){ return !isDismissed(i.id); });
+  }
+
+  function toggleExpand(id){
+    if(expandedIds.has(id)) expandedIds.delete(id); else expandedIds.add(id);
+    renderAll();
+  }
+
+  function jumpToItem(id){
+    sourceFilter = 'all';
+    statusFilter = 'all';
+    document.querySelectorAll('#source-pills .pill').forEach(function(b){
+      b.classList.toggle('active', b.getAttribute('data-source') === 'all');
+    });
+    expandedIds.add(id);
+    goTab('overview');
+    renderAll();
+    requestAnimationFrame(function(){
+      var card = null;
+      try { card = document.querySelector('.card[data-id="' + CSS.escape(id) + '"]'); } catch(e){}
+      if(!card) return;
+      if(typeof card.scrollIntoView === 'function') card.scrollIntoView({behavior:'smooth', block:'center'});
+      card.classList.add('flash');
+      setTimeout(function(){ card.classList.remove('flash'); }, 1600);
+    });
   }
 
   function renderStats(bySource){
@@ -472,7 +556,8 @@
     listEl.innerHTML = shown.map(function(item){
       var status = statusOf(item.id);
       var note = noteOf(item.id);
-      return '<div class="card" data-id="' + escapeHtml(item.id) + '">' +
+      var expanded = expandedIds.has(item.id);
+      return '<div class="card' + (expanded?' expanded':'') + '" data-id="' + escapeHtml(item.id) + '">' +
         '<div class="card-top">' +
           '<span class="src-tag' + (item.manual?' manual':'') + '">' + SRC_ICON[item.source] + ' ' + SRC_LABEL[item.source] + '</span>' +
           (item.startDate ? '<span class="date-tag mono">' + niceRange(item) + '</span>' : '') +
@@ -484,8 +569,12 @@
             '<button class="del-btn" type="button" title="Dismiss">×</button>' +
           '</span>' +
         '</div>' +
-        '<div class="title">' + escapeHtml(item.title||'Untitled') + '</div>' +
+        '<div class="title-row">' +
+          '<div class="title">' + escapeHtml(item.title||'Untitled') + '</div>' +
+          '<button class="expand-btn" type="button" title="Toggle details" aria-expanded="' + (expanded?'true':'false') + '"><span class="chev">▾</span></button>' +
+        '</div>' +
         (item.details ? '<div class="details">' + escapeHtml(item.details) + '</div>' : '') +
+        '<div class="card-expand">' + renderExpandContent(item) + '</div>' +
         '<div class="status-row">' +
           ['open','in_progress','snoozed','done'].map(function(s){
             var cls = s==='in_progress'?'prog':(s==='snoozed'?'snooze':s);
@@ -514,7 +603,27 @@
       cardEl.querySelector('.note-input').addEventListener('change', function(e){
         setOverride(id, {note: e.target.value});
       });
+      cardEl.querySelector('.title-row').addEventListener('click', function(){ toggleExpand(id); });
     });
+  }
+
+  function renderExpandContent(item){
+    var html = '';
+    if(item.breakdown){
+      var bd = Array.isArray(item.breakdown) ? item.breakdown : [item.breakdown];
+      bd = bd.filter(function(b){ return b && String(b).trim(); });
+      if(bd.length){
+        html += '<ul class="breakdown-list">' + bd.map(function(b){ return '<li>' + escapeHtml(b) + '</li>'; }).join('') + '</ul>';
+      }
+    }
+    var meta = [];
+    if(item.who) meta.push('<div class="meta-row"><span class="meta-label">From</span>' + escapeHtml(item.who) + '</div>');
+    if(item.firstSeen) meta.push('<div class="meta-row"><span class="meta-label">First seen</span>' + niceFullDate(item.firstSeen) + '</div>');
+    if(item.attachment) meta.push('<div class="meta-row"><span class="meta-label">Attachment</span>' + escapeHtml(item.attachment) + '</div>');
+    if(item.link) meta.push('<div class="meta-row"><span class="meta-label">Source</span><a href="' + escapeHtml(item.link) + '" target="_blank" rel="noopener">' + escapeHtml(item.link) + '</a></div>');
+    if(meta.length) html += '<div class="meta-block">' + meta.join('') + '</div>';
+    if(!html) html = '<div class="meta-empty">No further details yet.</div>';
+    return html;
   }
 
   function renderAll(){
@@ -600,9 +709,13 @@
             cell.classList.add('selected');
             var det = document.getElementById('day-detail');
             det.innerHTML = byDate[iso].map(function(i){
-              return '<div class="item"><div class="t">' + escapeHtml(i.title||'Untitled') + '</div>' +
-                '<div class="d">' + niceRange(i) + (i.details ? ' — ' + escapeHtml(i.details) : '') + '</div></div>';
+              return '<div class="item" data-id="' + escapeHtml(i.id) + '"><div class="t">' + escapeHtml(i.title||'Untitled') + '</div>' +
+                '<div class="d">' + niceRange(i) + (i.details ? ' — ' + escapeHtml(i.details) : '') + '</div>' +
+                '<div class="go">View in Overview →</div></div>';
             }).join('');
+            det.querySelectorAll('.item').forEach(function(el){
+              el.addEventListener('click', function(){ jumpToItem(el.getAttribute('data-id')); });
+            });
           });
         })(iso, cell);
       }
@@ -613,6 +726,20 @@
   document.getElementById('cal-next').addEventListener('click', function(){ calMonth++; if(calMonth>11){calMonth=0; calYear++;} renderCalendar(); });
   document.getElementById('cal-today').addEventListener('click', function(){ calYear = now0.getFullYear(); calMonth = now0.getMonth(); renderCalendar(); });
 
+  function checkDateRollover(){
+    var fresh = new Date();
+    var newToday = localDateStr(fresh);
+    renderTodayDate();
+    if(newToday !== todayStr){
+      todayStr = newToday;
+      now0 = fresh;
+      calYear = fresh.getFullYear(); calMonth = fresh.getMonth();
+      renderAll();
+    }
+  }
+  setInterval(checkDateRollover, 60000);
+
+  renderTodayDate();
   renderAll();
   } // end initApp
 })();
