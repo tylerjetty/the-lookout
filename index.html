@@ -46,7 +46,14 @@
   }
   nav.tabs button.active{background:var(--accent); color:#04231f;}
 
-  .wrap{max-width:900px; margin:0 auto; padding:36px 24px 70px;}
+  .date-bar{
+    background:var(--bg2); border-bottom:1px solid var(--border);
+    padding:14px 24px; display:flex; align-items:center; justify-content:flex-end; gap:8px;
+  }
+  .date-bar .dot{width:7px; height:7px; border-radius:50%; background:var(--accent); flex-shrink:0;}
+  #global-today-date{font-size:23px; font-weight:800; letter-spacing:.005em; color:var(--text);}
+
+  .wrap{max-width:1040px; margin:0 auto; padding:36px 24px 70px;}
   .page{display:none;}
   .page.active{display:block;}
 
@@ -57,13 +64,6 @@
   }
   .lede{color:var(--muted); font-size:14.5px; margin-bottom:20px;}
   .lede .mono{color:#a9b0bb;}
-
-  .today-pill{
-    display:inline-flex; align-items:center; gap:8px; background:var(--accent-dim); color:var(--accent);
-    border:1px solid var(--accent); font-weight:700; font-size:13.5px; padding:8px 14px 8px 12px;
-    border-radius:20px; margin-bottom:18px;
-  }
-  .today-pill .dot{width:6px; height:6px; border-radius:50%; background:var(--accent); flex-shrink:0;}
 
   .stats{display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:20px;}
   .stat{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 14px; cursor:pointer; transition:border-color .15s;}
@@ -144,27 +144,27 @@
   .empty{color:var(--muted); font-size:13.5px; padding:30px 0; text-align:center;}
   .tag.manual{color:var(--done); border-color:var(--done);}
 
-  .cal-wrap{max-width:460px;}
+  .cal-layout{display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap;}
+  .cal-wrap{max-width:575px; flex:0 0 auto; width:100%;}
+  .day-detail-panel{flex:1 1 320px; min-width:300px; max-width:460px;}
   .panel{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px;}
-  .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
-  .cal-head .month{font-weight:700; font-size:15px;}
-  .cal-head .nav-btns{display:flex; gap:6px;}
-  .cal-head .nav-btns button{border:1px solid var(--border); background:var(--card2); color:var(--text); border-radius:7px; width:28px; height:28px; cursor:pointer; font-size:13px; font-family:inherit;}
-  .cal-today-banner{font-size:12.5px; color:var(--accent); font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:7px;}
-  .cal-today-banner .dot{width:6px; height:6px; border-radius:50%; background:var(--accent); flex-shrink:0;}
-  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px;}
-  .cal-dow{font-size:10.5px; color:var(--muted); text-align:center; padding-bottom:4px;}
-  .cal-day{position:relative; aspect-ratio:1/1; border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:12.5px; cursor:default; border:1px solid transparent;}
+  .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:13px;}
+  .cal-head .month{font-weight:700; font-size:19px;}
+  .cal-head .nav-btns{display:flex; gap:7px;}
+  .cal-head .nav-btns button{border:1px solid var(--border); background:var(--card2); color:var(--text); border-radius:8px; width:35px; height:35px; cursor:pointer; font-size:16px; font-family:inherit;}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:5px;}
+  .cal-dow{font-size:13px; color:var(--muted); text-align:center; padding-bottom:5px;}
+  .cal-day{position:relative; aspect-ratio:1/1; border-radius:9px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:15.5px; cursor:default; border:1px solid transparent;}
   .cal-day.pad{visibility:hidden;}
   .cal-day.has-items{background:var(--accent-dim); cursor:pointer;}
-  .cal-day .dot{width:5px;height:5px;border-radius:50%;background:var(--accent); margin-top:2px;}
-  .cal-day.today{background:var(--accent); border-color:var(--accent); color:#04231f; font-weight:800; box-shadow:0 0 0 3px var(--accent-dim);}
+  .cal-day .dot{width:6px;height:6px;border-radius:50%;background:var(--accent); margin-top:3px;}
+  .cal-day.today{background:var(--accent); border-color:var(--accent); color:#04231f; font-weight:800; box-shadow:0 0 0 4px var(--accent-dim);}
   .cal-day.today .dot{background:#04231f;}
   .cal-day.today .daynum-wrap{position:relative;}
   .cal-day.selected{outline:2px solid var(--text);}
-  .cal-legend{font-size:11px; color:var(--muted); margin-top:10px; display:flex; align-items:center; gap:6px;}
-  .cal-legend .dot{width:5px;height:5px;border-radius:50%;background:var(--accent);}
-  #day-detail{margin-top:14px; border-top:1px solid var(--border); padding-top:12px; font-size:13px;}
+  .cal-legend{font-size:13.5px; color:var(--muted); margin-top:13px; display:flex; align-items:center; gap:7px;}
+  .cal-legend .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);}
+  .day-detail-panel h2.section-title{margin-bottom:14px;}
   #day-detail .empty{color:var(--muted); font-size:12.5px; padding:0; text-align:left;}
   #day-detail .item{margin-bottom:4px; padding:8px; border-radius:8px; cursor:pointer; transition:background .12s;}
   #day-detail .item:hover{background:var(--card2);}
@@ -249,12 +249,13 @@
     </nav>
   </div>
 
+  <div class="date-bar"><span class="dot"></span><span id="global-today-date">—</span></div>
+
   <div class="wrap">
 
     <div class="page active" id="page-overview">
       <div class="eyebrow">OPERATIONS RADAR</div>
       <h1 class="headline">The Lookout</h1>
-      <div class="today-pill"><span class="dot"></span><span id="today-date">—</span></div>
       <div class="mentions-banner" id="mentions-banner" style="display:none;"></div>
       <div class="lede">Pulled from Gmail and Slack, plus anything you add by hand · last scanned <span class="mono" id="scanned-date">—</span></div>
 
@@ -283,20 +284,24 @@
 
     <div class="page" id="page-calendar">
       <h2 class="section-title">Calendar</h2>
-      <div class="panel cal-wrap">
-        <div class="cal-today-banner"><span class="dot"></span><span id="cal-today-banner-text">—</span></div>
-        <div class="cal-head">
-          <div class="month" id="cal-month"></div>
-          <div class="nav-btns">
-            <button id="cal-prev" type="button">‹</button>
-            <button id="cal-today" type="button">•</button>
-            <button id="cal-next" type="button">›</button>
+      <div class="cal-layout">
+        <div class="panel cal-wrap">
+          <div class="cal-head">
+            <div class="month" id="cal-month"></div>
+            <div class="nav-btns">
+              <button id="cal-prev" type="button">‹</button>
+              <button id="cal-today" type="button">•</button>
+              <button id="cal-next" type="button">›</button>
+            </div>
           </div>
+          <div class="cal-grid" id="cal-dow-row"></div>
+          <div class="cal-grid" id="cal-grid"></div>
+          <div class="cal-legend"><span class="dot"></span> day has a date/deadline (multi-day ranges light up every day between)</div>
         </div>
-        <div class="cal-grid" id="cal-dow-row"></div>
-        <div class="cal-grid" id="cal-grid"></div>
-        <div class="cal-legend"><span class="dot"></span> day has a date/deadline (multi-day ranges light up every day between)</div>
-        <div id="day-detail"><div class="empty">Click a highlighted day to see details.</div></div>
+        <div class="panel day-detail-panel">
+          <h2 class="section-title">Day Detail</h2>
+          <div id="day-detail"><div class="empty">Click a highlighted day to see details.</div></div>
+        </div>
       </div>
     </div>
 
@@ -489,10 +494,8 @@
 
   function renderTodayDate(){
     var text = fullDateWithOrdinal(new Date());
-    var ov = document.getElementById('today-date');
-    if(ov) ov.textContent = text;
-    var cal = document.getElementById('cal-today-banner-text');
-    if(cal) cal.textContent = 'Today is ' + text;
+    var el = document.getElementById('global-today-date');
+    if(el) el.textContent = text;
   }
 
   var pages = {overview: document.getElementById('page-overview'), calendar: document.getElementById('page-calendar'), add: document.getElementById('page-add')};
