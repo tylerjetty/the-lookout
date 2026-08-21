@@ -69,6 +69,8 @@
   .card-top{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
   .src-tag{display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; letter-spacing:.04em; padding:4px 9px; border-radius:7px; border:1px solid var(--border); color:var(--muted);}
   .date-tag{font-size:12.5px; padding:4px 9px; border-radius:7px; border:1px solid var(--border); color:var(--muted);}
+  a.attachment-tag{text-decoration:none; cursor:pointer;}
+  a.attachment-tag:hover{border-color:var(--accent); color:var(--accent);}
   .card-actions{margin-left:auto; display:flex; gap:10px;}
   .card-actions button{background:transparent; border:none; color:var(--muted); cursor:pointer; font-size:15px; padding:0; line-height:1; font-family:inherit;}
   .card-actions button:hover{color:var(--text);}
@@ -272,7 +274,7 @@
   </div><!-- /#app -->
 
 <script type="application/json" id="lookout-data">
-{"lastScanned": "2026-08-21T20:46:41Z", "items": [{"id": "gmail-dymo-case-51967644", "source": "gmail", "title": "Reply to DYMO support case #51967644", "startDate": null, "endDate": null, "details": "DYMO Consumer Service followed up asking if you still need help or more time on this case — reply directly to the email or it may get closed out.", "who": "DYMO Consumer Service", "link": "https://mail.google.com/mail/u/0/#inbox/1a0257b2e17b9fae", "firstSeen": "2026-08-21"}, {"id": "slack-brooke-moray-tee-restock", "source": "slack", "title": "Moray Tee restock for Flagship", "startDate": "2026-08-21", "endDate": null, "details": "Brooke asked if Flagship could get a Moray Tee restock today, ahead of the weekend, following a recent social push on the tee.", "who": "Brooke Carty", "link": "https://jettylife.slack.com/archives/C0AUG6VB0ET/p1787271260168789", "firstSeen": "2026-08-21"}]}
+{"lastScanned": null, "items": []}
 </script>
 
 <script>
@@ -474,7 +476,9 @@
         '<div class="card-top">' +
           '<span class="src-tag' + (item.manual?' manual':'') + '">' + SRC_ICON[item.source] + ' ' + SRC_LABEL[item.source] + '</span>' +
           (item.startDate ? '<span class="date-tag mono">' + niceRange(item) + '</span>' : '') +
-          (item.attachment ? '<span class="date-tag" title="Attachment on the source message">📎 ' + escapeHtml(item.attachment) + '</span>' : '') +
+          (item.attachment ? (item.link
+            ? '<a class="date-tag attachment-tag" href="' + escapeHtml(item.link) + '" target="_blank" rel="noopener" title="Open source to view this attachment">📎 ' + escapeHtml(item.attachment) + '</a>'
+            : '<span class="date-tag" title="Attachment mentioned on the source message (no link available)">📎 ' + escapeHtml(item.attachment) + '</span>') : '') +
           '<span class="card-actions">' +
             (item.link ? '<button class="open-btn" type="button" title="Open source">↗</button>' : '') +
             '<button class="del-btn" type="button" title="Dismiss">×</button>' +
