@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Lookout</title>
+<style>
+  :root{
+    --bg:#0b0f13; --bg2:#0e1318; --card:#141a20; --card2:#111620; --border:#232a32; --text:#eef1f4;
+    --muted:#8b94a1; --accent:#57d3c6; --accent-dim:rgba(87,211,198,.14);
+    --open:#e08a4e; --open-bg:rgba(224,138,78,.14);
+    --prog:#e0b84e; --prog-bg:rgba(224,184,78,.10);
+    --snooze:#8b94a1; --snooze-bg:rgba(139,148,161,.10);
+    --done:#4fbf8b; --done-bg:rgba(79,191,139,.10);
+    --danger:#e0704e;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg); color:var(--text);
+  }
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+
+  .navbar{
+    background:var(--bg2); border-bottom:1px solid var(--border);
+    padding:10px 24px; display:flex; align-items:center; justify-content:flex-end; gap:6px;
+    position:sticky; top:0; z-index:5;
+  }
+  nav.tabs{display:flex; gap:4px; background:var(--card); border:1px solid var(--border); border-radius:9px; padding:3px;}
+  nav.tabs button{
+    border:none; background:transparent; color:var(--muted); font-size:12.5px; font-weight:600;
+    padding:6px 12px; border-radius:7px; cursor:pointer; font-family:inherit;
+  }
+  nav.tabs button.active{background:var(--accent); color:#04231f;}
+
+  .wrap{max-width:900px; margin:0 auto; padding:36px 24px 70px;}
+  .page{display:none;}
+  .page.active{display:block;}
+
+  .eyebrow{font-size:11.5px; letter-spacing:.14em; color:var(--accent); font-weight:700; margin-bottom:10px;}
+  h1.headline{
+    font-family:Georgia,'Times New Roman',serif; font-size:44px; font-weight:700; margin:0 0 14px; color:var(--text);
+    text-wrap:balance;
+  }
+  .lede{color:var(--muted); font-size:14.5px; margin-bottom:28px;}
+  .lede .mono{color:#a9b0bb;}
+
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px;}
+  .stat{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 14px; cursor:pointer; transition:border-color .15s;}
+  .stat:hover{border-color:#3a4450;}
+  .stat.selected{border-color:var(--accent);}
+  .stat .n{font-size:30px; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-variant-numeric:tabular-nums;}
+  .stat .l{font-size:12px; color:var(--muted); margin-top:2px;}
+  .stat.open .n{color:var(--open);}
+  .stat.prog .n{color:var(--prog);}
+  .stat.snooze .n{color:var(--snooze);}
+  .stat.done .n{color:var(--done);}
+
+  .toolbar{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:22px; flex-wrap:wrap;}
+  .pills{display:flex; gap:8px; flex-wrap:wrap;}
+  .pill{border:1px solid var(--border); background:var(--card); color:var(--muted); font-size:13px; font-weight:600; padding:7px 16px; border-radius:20px; cursor:pointer; font-family:inherit;}
+  .pill.active{background:var(--accent); color:#04231f; border-color:var(--accent);}
+  .btn-add{background:var(--accent); color:#04231f; border:none; border-radius:9px; padding:9px 18px; font-size:13.5px; font-weight:700; cursor:pointer; font-family:inherit;}
+
+  .list-header{font-size:12px; letter-spacing:.06em; color:var(--muted); font-weight:700; margin-bottom:12px;}
+
+  .card{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px 18px; margin-bottom:14px;}
+  .card-top{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .src-tag{display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; letter-spacing:.04em; padding:4px 9px; border-radius:7px; border:1px solid var(--border); color:var(--muted);}
+  .date-tag{font-size:12.5px; padding:4px 9px; border-radius:7px; border:1px solid var(--border); color:var(--muted);}
+  .card-actions{margin-left:auto; display:flex; gap:10px;}
+  .card-actions button{background:transparent; border:none; color:var(--muted); cursor:pointer; font-size:15px; padding:0; line-height:1; font-family:inherit;}
+  .card-actions button:hover{color:var(--text);}
+  .card-actions .del-btn:hover{color:var(--danger);}
+  .card .title{font-size:16px; font-weight:700; margin:12px 0 4px;}
+  .card .details{font-size:13.5px; color:var(--muted); line-height:1.5; margin-bottom:12px;}
+  .status-row{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;}
+  .status-pill{border:1px solid var(--border); background:transparent; color:var(--muted); font-size:12.5px; font-weight:600; padding:6px 13px; border-radius:20px; cursor:pointer; font-family:inherit;}
+  .status-pill.sel.open{background:var(--open-bg); color:var(--open); border-color:var(--open);}
+  .status-pill.sel.prog{background:var(--prog-bg); color:var(--prog); border-color:var(--prog);}
+  .status-pill.sel.snooze{background:var(--snooze-bg); color:var(--snooze); border-color:var(--snooze);}
+  .status-pill.sel.done{background:var(--done-bg); color:var(--done); border-color:var(--done);}
+  .note-input{width:100%; background:var(--card2); border:1px solid var(--border); border-radius:9px; padding:9px 12px; color:var(--text); font-size:13px; font-family:inherit;}
+  .note-input::placeholder{color:#5c6470;}
+  .empty{color:var(--muted); font-size:13.5px; padding:30px 0; text-align:center;}
+  .tag.manual{color:var(--done); border-color:var(--done);}
+
+  .cal-wrap{max-width:460px;}
+  .panel{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px;}
+  .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+  .cal-head .month{font-weight:700; font-size:15px;}
+  .cal-head .nav-btns{display:flex; gap:6px;}
+  .cal-head .nav-btns button{border:1px solid var(--border); background:var(--card2); color:var(--text); border-radius:7px; width:28px; height:28px; cursor:pointer; font-size:13px; font-family:inherit;}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px;}
+  .cal-dow{font-size:10.5px; color:var(--muted); text-align:center; padding-bottom:4px;}
+  .cal-day{position:relative; aspect-ratio:1/1; border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:12.5px; cursor:default; border:1px solid transparent;}
+  .cal-day.pad{visibility:hidden;}
+  .cal-day.today{border-color:var(--accent); font-weight:700;}
+  .cal-day.has-items{background:var(--accent-dim); cursor:pointer;}
+  .cal-day .dot{width:5px;height:5px;border-radius:50%;background:var(--accent); margin-top:2px;}
+  .cal-day.selected{outline:2px solid var(--accent);}
+  .cal-legend{font-size:11px; color:var(--muted); margin-top:10px; display:flex; align-items:center; gap:6px;}
+  .cal-legend .dot{width:5px;height:5px;border-radius:50%;background:var(--accent);}
+  #day-detail{margin-top:14px; border-top:1px solid var(--border); padding-top:12px; font-size:13px;}
+  #day-detail .empty{color:var(--muted); font-size:12.5px; padding:0; text-align:left;}
+  #day-detail .item{margin-bottom:8px;}
+  #day-detail .item .t{font-weight:600;}
+  #day-detail .item .d{color:var(--muted); font-size:12px; margin-top:2px;}
+
+  form.add-form{display:grid; gap:12px; max-width:480px;}
+  form.add-form label{font-size:12px; color:var(--muted); display:block; margin-bottom:4px;}
+  form.add-form input[type=text], form.add-form input[type=date], form.add-form input[type=url], form.add-form textarea{
+    width:100%; background:var(--card2); border:1px solid var(--border); border-radius:8px; padding:9px 10px; color:var(--text); font-size:13.5px; font-family:inherit;
+  }
+  form.add-form textarea{min-height:64px; resize:vertical;}
+  .radio-row{display:flex; gap:16px; font-size:13px;}
+  .radio-row label{display:flex; align-items:center; gap:6px; color:var(--text); margin:0;}
+  .date-range-row{display:flex; gap:10px;}
+  .date-range-row > div{flex:1;}
+  form.add-form button{background:var(--accent); color:#04231f; border:none; border-radius:8px; padding:10px 16px; font-size:13.5px; font-weight:700; cursor:pointer; font-family:inherit; width:fit-content;}
+  .form-note{font-size:11.5px; color:var(--muted); margin-top:-4px;}
+  h2.section-title{font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:0 0 12px;}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+</style>
+</head>
+<body>
+  <div class="navbar">
+    <nav class="tabs">
+      <button data-page="overview" class="active">Overview</button>
+      <button data-page="calendar">Calendar</button>
+      <button data-page="add">Add Item</button>
+    </nav>
+  </div>
+
+  <div class="wrap">
+
+    <div class="page active" id="page-overview">
+      <div class="eyebrow">OPERATIONS RADAR</div>
+      <h1 class="headline">The Lookout</h1>
+      <div class="lede">Pulled from Gmail and Slack, plus anything you add by hand · last scanned <span class="mono" id="scanned-date">—</span></div>
+
+      <div class="stats">
+        <div class="stat open" data-status="open"><div class="n" id="stat-open">0</div><div class="l">Open</div></div>
+        <div class="stat prog" data-status="in_progress"><div class="n" id="stat-prog">0</div><div class="l">In progress</div></div>
+        <div class="stat snooze" data-status="snoozed"><div class="n" id="stat-snooze">0</div><div class="l">Snoozed</div></div>
+        <div class="stat done" data-status="done"><div class="n" id="stat-done">0</div><div class="l">Done</div></div>
+      </div>
+
+      <div class="toolbar">
+        <div class="pills" id="source-pills">
+          <button class="pill active" data-source="all">All</button>
+          <button class="pill" data-source="gmail">Gmail</button>
+          <button class="pill" data-source="slack">Slack</button>
+          <button class="pill" data-source="manual">Manual</button>
+        </div>
+        <button class="btn-add" id="add-item-btn" type="button">+ Add item</button>
+      </div>
+
+      <div class="list-header" id="list-header">ACTIVE (0)</div>
+      <div id="item-list"></div>
+    </div>
+
+    <div class="page" id="page-calendar">
+      <h2 class="section-title">Calendar</h2>
+      <div class="panel cal-wrap">
+        <div class="cal-head">
+          <div class="month" id="cal-month"></div>
+          <div class="nav-btns">
+            <button id="cal-prev" type="button">‹</button>
+            <button id="cal-today" type="button">•</button>
+            <button id="cal-next" type="button">›</button>
+          </div>
+        </div>
+        <div class="cal-grid" id="cal-dow-row"></div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-legend"><span class="dot"></span> day has a date/deadline (multi-day ranges light up every day between)</div>
+        <div id="day-detail"><div class="empty">Click a highlighted day to see details.</div></div>
+      </div>
+    </div>
+
+    <div class="page" id="page-add">
+      <h2 class="section-title">Add a Date or Task</h2>
+      <div class="panel">
+        <form class="add-form" id="add-form">
+          <div>
+            <label>What is it?</label>
+            <input type="text" id="f-title" placeholder="e.g. Send contract to Acme" required>
+          </div>
+          <div class="radio-row">
+            <label><input type="radio" name="f-kind" value="date" checked> Has a specific date</label>
+            <label><input type="radio" name="f-kind" value="task"> Open task (no date)</label>
+          </div>
+          <div id="f-date-wrap" class="date-range-row">
+            <div>
+              <label>Start date</label>
+              <input type="date" id="f-date">
+            </div>
+            <div>
+              <label>End date (optional)</label>
+              <input type="date" id="f-end-date">
+            </div>
+          </div>
+          <div>
+            <label>Details (optional)</label>
+            <textarea id="f-details" placeholder="Any context worth remembering"></textarea>
+          </div>
+          <div>
+            <label>Who / source (optional)</label>
+            <input type="text" id="f-who" placeholder="e.g. Sam, or 'me'">
+          </div>
+          <div>
+            <label>Link (optional)</label>
+            <input type="url" id="f-link" placeholder="https://...">
+          </div>
+          <button type="submit">Add to brief</button>
+          <div class="form-note">Manually added items are saved in this browser and show up here, in the Overview, and on the Calendar, alongside anything found in Gmail/Slack. Give it an end date if it spans several days (like a sale running 8/9–8/20) and every day in that range lights up on the calendar.</div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+<script type="application/json" id="lookout-data">
+{"lastScanned": null, "items": []}
+</script>
+
+<script>
+(function(){
+  var LS_MANUAL = 'lookoutManualItems';
+  var LS_OVERRIDES = 'lookoutOverrides';
+
+  var dataEl = document.getElementById('lookout-data');
+  var scanState = {lastScanned:null, items:[]};
+  try { scanState = JSON.parse(dataEl.textContent); } catch(e){}
+  var scanItems = (scanState.items || []).map(function(i){ return Object.assign({}, i, {manual:false}); });
+
+  function loadJSON(key, fallback){
+    try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); } catch(e){ return fallback; }
+  }
+  function saveJSON(key, val){
+    try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){}
+  }
+  var manualItems = loadJSON(LS_MANUAL, []).map(function(i){ return Object.assign({}, i, {manual:true}); });
+  var overrides = loadJSON(LS_OVERRIDES, {});
+
+  function statusOf(id){ return (overrides[id] && overrides[id].status) || 'open'; }
+  function noteOf(id){ return (overrides[id] && overrides[id].note) || ''; }
+  function isDismissed(id){ return !!(overrides[id] && overrides[id].dismissed); }
+  function setOverride(id, patch){
+    overrides[id] = Object.assign({}, overrides[id]||{}, patch);
+    saveJSON(LS_OVERRIDES, overrides);
+  }
+
+  function escapeHtml(s){
+    return String(s==null?'':s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function niceDate(iso){
+    var d = new Date(iso + 'T00:00:00');
+    if(isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+  }
+  function niceFullDate(iso){
+    var d = new Date(iso);
+    if(isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+  }
+  function niceRange(item){
+    if(!item.startDate) return '';
+    if(item.endDate && item.endDate !== item.startDate) return niceDate(item.startDate) + ' – ' + niceDate(item.endDate);
+    return niceDate(item.startDate);
+  }
+  function datesInRange(item){
+    var out = [];
+    if(!item.startDate) return out;
+    var start = new Date(item.startDate + 'T00:00:00');
+    var end = item.endDate ? new Date(item.endDate + 'T00:00:00') : start;
+    var cur = new Date(start);
+    var guard = 0;
+    while(cur <= end && guard < 400){
+      out.push(cur.getFullYear() + '-' + String(cur.getMonth()+1).padStart(2,'0') + '-' + String(cur.getDate()).padStart(2,'0'));
+      cur.setDate(cur.getDate()+1); guard++;
+    }
+    return out;
+  }
+
+  var todayStr = new Date().toISOString().slice(0,10);
+
+  var pages = {overview: document.getElementById('page-overview'), calendar: document.getElementById('page-calendar'), add: document.getElementById('page-add')};
+  function goTab(name){
+    document.querySelectorAll('nav.tabs button').forEach(function(b){b.classList.toggle('active', b.getAttribute('data-page')===name);});
+    Object.keys(pages).forEach(function(k){ pages[k].classList.toggle('active', k===name); });
+  }
+  document.querySelectorAll('nav.tabs button').forEach(function(btn){
+    btn.addEventListener('click', function(){ goTab(btn.getAttribute('data-page')); });
+  });
+  document.getElementById('add-item-btn').addEventListener('click', function(){ goTab('add'); });
+
+  document.getElementById('scanned-date').textContent = scanState.lastScanned ? niceFullDate(scanState.lastScanned) : 'never';
+
+  var sourceFilter = 'all';
+  var statusFilter = null;
+
+  document.querySelectorAll('#source-pills .pill').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      sourceFilter = btn.getAttribute('data-source');
+      document.querySelectorAll('#source-pills .pill').forEach(function(b){b.classList.toggle('active', b===btn);});
+      renderAll();
+    });
+  });
+  document.querySelectorAll('.stat').forEach(function(el){
+    el.addEventListener('click', function(){
+      var s = el.getAttribute('data-status');
+      statusFilter = (statusFilter === s) ? null : s;
+      renderAll();
+    });
+  });
+
+  var SRC_LABEL = {gmail:'GMAIL', slack:'SLACK', manual:'MANUAL'};
+  var SRC_ICON = {gmail:'✉', slack:'#', manual:'✎'};
+  var STATUS_LABEL = {open:'Open', in_progress:'In progress', snoozed:'Snoozed', done:'Done'};
+
+  function allItems(){
+    return scanItems.concat(manualItems).filter(function(i){ return !isDismissed(i.id); });
+  }
+
+  function renderStats(bySource){
+    var counts = {open:0, in_progress:0, snoozed:0, done:0};
+    bySource.forEach(function(i){ counts[statusOf(i.id)] = (counts[statusOf(i.id)]||0) + 1; });
+    document.getElementById('stat-open').textContent = counts.open;
+    document.getElementById('stat-prog').textContent = counts.in_progress;
+    document.getElementById('stat-snooze').textContent = counts.snoozed;
+    document.getElementById('stat-done').textContent = counts.done;
+    document.querySelectorAll('.stat').forEach(function(el){
+      el.classList.toggle('selected', el.getAttribute('data-status') === statusFilter);
+    });
+  }
+
+  function renderList(items){
+    var header = document.getElementById('list-header');
+    var listEl = document.getElementById('item-list');
+    var shown;
+    if(statusFilter){
+      shown = items.filter(function(i){ return statusOf(i.id) === statusFilter; });
+      header.textContent = STATUS_LABEL[statusFilter].toUpperCase() + ' (' + shown.length + ')';
+    } else {
+      shown = items.filter(function(i){ return statusOf(i.id) !== 'done'; });
+      header.textContent = 'ACTIVE (' + shown.length + ')';
+    }
+    shown = shown.slice().sort(function(a,b){
+      var ad = a.startDate || '9999-99-99', bd = b.startDate || '9999-99-99';
+      return ad < bd ? -1 : ad > bd ? 1 : 0;
+    });
+    if(!shown.length){
+      listEl.innerHTML = '<div class="empty">Nothing here.</div>';
+      return;
+    }
+    listEl.innerHTML = shown.map(function(item){
+      var status = statusOf(item.id);
+      var note = noteOf(item.id);
+      return '<div class="card" data-id="' + escapeHtml(item.id) + '">' +
+        '<div class="card-top">' +
+          '<span class="src-tag' + (item.manual?' manual':'') + '">' + SRC_ICON[item.source] + ' ' + SRC_LABEL[item.source] + '</span>' +
+          (item.startDate ? '<span class="date-tag mono">' + niceRange(item) + '</span>' : '') +
+          '<span class="card-actions">' +
+            (item.link ? '<button class="open-btn" type="button" title="Open source">↗</button>' : '') +
+            '<button class="del-btn" type="button" title="Dismiss">×</button>' +
+          '</span>' +
+        '</div>' +
+        '<div class="title">' + escapeHtml(item.title||'Untitled') + '</div>' +
+        (item.details ? '<div class="details">' + escapeHtml(item.details) + '</div>' : '') +
+        '<div class="status-row">' +
+          ['open','in_progress','snoozed','done'].map(function(s){
+            var cls = s==='in_progress'?'prog':(s==='snoozed'?'snooze':s);
+            return '<button class="status-pill' + (status===s?' sel '+cls:'') + '" type="button" data-status="' + s + '">' + STATUS_LABEL[s] + '</button>';
+          }).join('') +
+        '</div>' +
+        '<input class="note-input" placeholder="Add a note..." value="' + escapeHtml(note) + '">' +
+      '</div>';
+    }).join('');
+
+    listEl.querySelectorAll('.card').forEach(function(cardEl){
+      var id = cardEl.getAttribute('data-id');
+      var item = allItems().filter(function(i){ return i.id === id; })[0];
+      cardEl.querySelectorAll('.status-pill').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          setOverride(id, {status: btn.getAttribute('data-status')});
+          renderAll();
+        });
+      });
+      var openBtn = cardEl.querySelector('.open-btn');
+      if(openBtn) openBtn.addEventListener('click', function(){ window.open(item.link, '_blank'); });
+      cardEl.querySelector('.del-btn').addEventListener('click', function(){
+        setOverride(id, {dismissed:true});
+        renderAll();
+      });
+      cardEl.querySelector('.note-input').addEventListener('change', function(e){
+        setOverride(id, {note: e.target.value});
+      });
+    });
+  }
+
+  function renderAll(){
+    var items = allItems();
+    var bySource = sourceFilter === 'all' ? items : items.filter(function(i){ return i.source === sourceFilter; });
+    renderStats(bySource);
+    renderList(bySource);
+    byDate = {};
+    bySource.forEach(function(i){
+      datesInRange(i).forEach(function(d){ (byDate[d] = byDate[d] || []).push(i); });
+    });
+    renderCalendar();
+  }
+
+  var kindRadios = document.getElementsByName('f-kind');
+  var dateWrap = document.getElementById('f-date-wrap');
+  function syncDateWrap(){
+    var kind = document.querySelector('input[name="f-kind"]:checked').value;
+    dateWrap.style.display = kind === 'date' ? '' : 'none';
+  }
+  Array.prototype.forEach.call(kindRadios, function(r){ r.addEventListener('change', syncDateWrap); });
+  syncDateWrap();
+
+  document.getElementById('add-form').addEventListener('submit', function(e){
+    e.preventDefault();
+    var kind = document.querySelector('input[name="f-kind"]:checked').value;
+    var startDate = kind === 'date' ? (document.getElementById('f-date').value || null) : null;
+    var endDate = kind === 'date' ? (document.getElementById('f-end-date').value || null) : null;
+    if(endDate && startDate && endDate < startDate){ var t = startDate; startDate = endDate; endDate = t; }
+    var item = {
+      id: 'manual-' + Date.now() + '-' + Math.random().toString(36).slice(2,7),
+      source: 'manual',
+      title: document.getElementById('f-title').value.trim(),
+      startDate: startDate,
+      endDate: endDate,
+      details: document.getElementById('f-details').value.trim(),
+      who: document.getElementById('f-who').value.trim(),
+      link: document.getElementById('f-link').value.trim(),
+      firstSeen: todayStr
+    };
+    if(!item.title) return;
+    manualItems.push(Object.assign({}, item, {manual:true}));
+    saveJSON(LS_MANUAL, manualItems.map(function(i){ var c=Object.assign({},i); delete c.manual; return c; }));
+    this.reset();
+    syncDateWrap();
+    goTab('overview');
+    renderAll();
+  });
+
+  var byDate = {};
+  var calYear, calMonth;
+  var now0 = new Date();
+  calYear = now0.getFullYear(); calMonth = now0.getMonth();
+
+  var dowRow = document.getElementById('cal-dow-row');
+  ['S','M','T','W','T','F','S'].forEach(function(d){
+    var el = document.createElement('div'); el.className='cal-dow'; el.textContent = d; dowRow.appendChild(el);
+  });
+
+  function renderCalendar(){
+    document.getElementById('cal-month').textContent = new Date(calYear, calMonth, 1).toLocaleDateString('en-US', {month:'long', year:'numeric'});
+    var calGrid = document.getElementById('cal-grid');
+    calGrid.innerHTML = '';
+    var firstDow = new Date(calYear, calMonth, 1).getDay();
+    var daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+
+    for(var p=0; p<firstDow; p++){
+      var pad = document.createElement('div'); pad.className='cal-day pad'; calGrid.appendChild(pad);
+    }
+    for(var day=1; day<=daysInMonth; day++){
+      var iso = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+      var cell = document.createElement('div');
+      cell.className = 'cal-day';
+      if(iso === todayStr) cell.className += ' today';
+      var dayNum = document.createElement('div'); dayNum.textContent = day;
+      cell.appendChild(dayNum);
+      if(byDate[iso]){
+        cell.className += ' has-items';
+        var dot = document.createElement('div'); dot.className='dot'; cell.appendChild(dot);
+        (function(iso, cell){
+          cell.addEventListener('click', function(){
+            document.querySelectorAll('.cal-day.selected').forEach(function(c){c.classList.remove('selected');});
+            cell.classList.add('selected');
+            var det = document.getElementById('day-detail');
+            det.innerHTML = byDate[iso].map(function(i){
+              return '<div class="item"><div class="t">' + escapeHtml(i.title||'Untitled') + '</div>' +
+                '<div class="d">' + niceRange(i) + (i.details ? ' — ' + escapeHtml(i.details) : '') + '</div></div>';
+            }).join('');
+          });
+        })(iso, cell);
+      }
+      calGrid.appendChild(cell);
+    }
+  }
+  document.getElementById('cal-prev').addEventListener('click', function(){ calMonth--; if(calMonth<0){calMonth=11; calYear--;} renderCalendar(); });
+  document.getElementById('cal-next').addEventListener('click', function(){ calMonth++; if(calMonth>11){calMonth=0; calYear++;} renderCalendar(); });
+  document.getElementById('cal-today').addEventListener('click', function(){ calYear = now0.getFullYear(); calMonth = now0.getMonth(); renderCalendar(); });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
