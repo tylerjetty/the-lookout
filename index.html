@@ -86,11 +86,14 @@
   .stat.done .n{color:var(--done);}
 
   .toolbar{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:22px; flex-wrap:wrap;}
+  .pills-row{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
   .pills{display:flex; gap:8px; flex-wrap:wrap;}
   .pill{border:1px solid var(--border); background:var(--card); color:var(--muted); font-size:13px; font-weight:600; padding:7px 16px; border-radius:20px; cursor:pointer; font-family:inherit;}
   .pill.active{background:var(--accent); color:#16210f; border-color:var(--accent);}
   .pill.mentions{border-color:var(--priority); color:var(--priority);}
   .pill.mentions.active{background:var(--priority); color:#16210f; border-color:var(--priority);}
+  .pill.week{border-color:var(--accent); color:var(--accent);}
+  .pill.week.active{background:var(--accent); color:#16210f; border-color:var(--accent);}
   .pill-count{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; margin-left:3px;}
   .btn-add{background:var(--accent); color:#16210f; border:none; border-radius:9px; padding:9px 18px; font-size:13.5px; font-weight:700; cursor:pointer; font-family:inherit;}
 
@@ -282,13 +285,18 @@
       </div>
 
       <div class="toolbar">
-        <div class="pills" id="source-pills">
-          <button class="pill active" data-source="all">All</button>
-          <button class="pill" data-source="gmail">Gmail</button>
-          <button class="pill" data-source="slack">Slack</button>
-          <button class="pill" data-source="calendar">Calendar</button>
-          <button class="pill" data-source="manual">Manual</button>
-          <button class="pill mentions" data-source="mentions">🎯 Mentions of You<span class="pill-count" id="mentions-count"></span></button>
+        <div class="pills-row">
+          <div class="pills" id="source-pills">
+            <button class="pill active" data-source="all">All</button>
+            <button class="pill" data-source="gmail">Gmail</button>
+            <button class="pill" data-source="slack">Slack</button>
+            <button class="pill" data-source="calendar">Calendar</button>
+            <button class="pill" data-source="manual">Manual</button>
+            <button class="pill mentions" data-source="mentions">🎯 Mentions of You<span class="pill-count" id="mentions-count"></span></button>
+          </div>
+          <div class="pills" id="extra-filters">
+            <button class="pill week" id="week-filter-btn" type="button">📅 This Week</button>
+          </div>
         </div>
         <button class="btn-add" id="add-item-btn" type="button">+ Add item</button>
       </div>
@@ -529,6 +537,7 @@
   var statusFilter = null;
   var searchQuery = '';
   var searchQueryRaw = '';
+  var weekFilterOn = false;
 
   function matchesSearch(item){
     if(!searchQuery) return true;
@@ -538,6 +547,28 @@
       .filter(Boolean).join(' ').toLowerCase();
     return hay.indexOf(searchQuery) !== -1;
   }
+
+  // "This Week" = the calendar week (Sun–Sat) containing today, in local time.
+  function currentWeekRange(){
+    var now = new Date();
+    var start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+    var end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
+    return { start: localDateStr(start), end: localDateStr(end) };
+  }
+  function matchesWeek(item){
+    if(!weekFilterOn) return true;
+    var range = currentWeekRange();
+    var days = datesInRange(item);
+    if(!days.length) return false;
+    return days.some(function(d){ return d >= range.start && d <= range.end; });
+  }
+
+  var weekFilterBtn = document.getElementById('week-filter-btn');
+  weekFilterBtn.addEventListener('click', function(){
+    weekFilterOn = !weekFilterOn;
+    weekFilterBtn.classList.toggle('active', weekFilterOn);
+    renderAll();
+  });
 
   var searchInput = document.getElementById('global-search');
   var searchClear = document.getElementById('search-clear');
@@ -637,6 +668,9 @@
       shown = items.filter(function(i){ return statusOf(i.id) !== 'done'; });
       header.textContent = 'ACTIVE (' + shown.length + ')';
     }
+    if(weekFilterOn){
+      header.textContent += ' · this week';
+    }
     if(searchQueryRaw){
       header.textContent += ' — matching “' + searchQueryRaw + '”';
     }
@@ -648,7 +682,8 @@
       return ad < bd ? -1 : ad > bd ? 1 : 0;
     });
     if(!shown.length){
-      listEl.innerHTML = '<div class="empty">' + (searchQueryRaw ? 'No matches for “' + escapeHtml(searchQueryRaw) + '”.' : 'Nothing here.') + '</div>';
+      var emptyMsg = searchQueryRaw ? 'No matches for “' + escapeHtml(searchQueryRaw) + '”.' : (weekFilterOn ? 'Nothing dated this week.' : 'Nothing here.');
+      listEl.innerHTML = '<div class="empty">' + emptyMsg + '</div>';
       return;
     }
     listEl.innerHTML = shown.map(function(item){
@@ -767,6 +802,7 @@
       : sourceFilter === 'mentions' ? items.filter(function(i){ return i.directMention; })
       : items.filter(function(i){ return i.source === sourceFilter; });
     bySource = bySource.filter(matchesSearch);
+    bySource = bySource.filter(matchesWeek);
     renderStats(bySource);
     renderList(bySource);
     byDate = {};
