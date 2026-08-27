@@ -105,6 +105,12 @@
   .mentions-banner:hover{background:rgba(156,107,88,.32);}
 
   .list-header{font-size:12px; letter-spacing:.06em; color:var(--muted); font-weight:700; margin-bottom:12px;}
+  .group-header{font-size:11.5px; letter-spacing:.06em; color:var(--muted); font-weight:700; margin:22px 0 10px; text-transform:uppercase;}
+  .group-header:first-child{margin-top:0;}
+  .group-header.open{color:var(--open);}
+  .group-header.prog{color:var(--prog);}
+  .group-header.snooze{color:var(--snooze);}
+  .group-header.done{color:var(--done);}
 
   .card{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px 18px; margin-bottom:14px;}
   .card.priority{border-color:var(--priority);}
@@ -604,7 +610,13 @@
   document.querySelectorAll('.stat').forEach(function(el){
     el.addEventListener('click', function(){
       var s = el.getAttribute('data-status');
-      statusFilter = (statusFilter === s) ? null : s;
+      if(s === 'all'){
+        statusFilter = (statusFilter === 'all') ? null : 'all';
+      } else {
+        var current = (statusFilter instanceof Set) ? new Set(statusFilter) : new Set();
+        if(current.has(s)) current.delete(s); else current.add(s);
+        statusFilter = current.size ? current : null;
+      }
       renderAll();
     });
   });
@@ -650,20 +662,87 @@
     document.getElementById('stat-snooze').textContent = counts.snoozed;
     document.getElementById('stat-done').textContent = counts.done;
     document.querySelectorAll('.stat').forEach(function(el){
-      el.classList.toggle('selected', el.getAttribute('data-status') === statusFilter);
+      var s = el.getAttribute('data-status');
+      var isSel = s === 'all' ? statusFilter === 'all' : (statusFilter instanceof Set && statusFilter.has(s));
+      el.classList.toggle('selected', isSel);
     });
+  }
+
+  function sortItems(arr){
+    return arr.slice().sort(function(a,b){
+      var ap = (a.directMention || a.actionRequested) ? 0 : 1;
+      var bp = (b.directMention || b.actionRequested) ? 0 : 1;
+      if(ap !== bp) return ap - bp;
+      var ad = a.startDate || '9999-99-99', bd = b.startDate || '9999-99-99';
+      return ad < bd ? -1 : ad > bd ? 1 : 0;
+    });
+  }
+
+  function renderCard(item){
+    var status = statusOf(item.id);
+    var note = noteOf(item.id);
+    var expanded = expandedIds.has(item.id);
+    var isPriority = !!(item.directMention || item.actionRequested);
+    var mentionBadge = '';
+    if(item.directMention && item.actionRequested){
+      mentionBadge = '<span class="mention-tag">🎯 Direct ask of you</span>';
+    } else if(item.directMention){
+      mentionBadge = '<span class="mention-tag alt">🎯 Mentions you</span>';
+    } else if(item.actionRequested){
+      mentionBadge = '<span class="mention-tag alt">⚡ Action requested</span>';
+    }
+    return '<div class="card' + (expanded?' expanded':'') + (isPriority?' priority':'') + '" data-id="' + escapeHtml(item.id) + '">' +
+      '<div class="card-top">' +
+        mentionBadge +
+        '<span class="src-tag' + (item.manual?' manual':'') + '">' + SRC_ICON[item.source] + ' ' + SRC_LABEL[item.source] + '</span>' +
+        (item.startDate ? '<span class="date-tag mono">' + niceRange(item) + '</span>' : '') +
+        (item.attachment ? (item.link
+          ? '<a class="date-tag attachment-tag" href="' + escapeHtml(item.link) + '" target="_blank" rel="noopener" title="Open source to view this attachment">📎 ' + escapeHtml(item.attachment) + '</a>'
+          : '<span class="date-tag" title="Attachment mentioned on the source message (no link available)">📎 ' + escapeHtml(item.attachment) + '</span>') : '') +
+        '<span class="card-actions">' +
+          (item.link ? '<button class="open-btn" type="button" title="Open source">↗</button>' : '') +
+          '<button class="del-btn" type="button" title="Dismiss">×</button>' +
+        '</span>' +
+      '</div>' +
+      '<div class="title-row">' +
+        '<div class="title">' + escapeHtml(item.title||'Untitled') + '</div>' +
+        '<button class="expand-btn" type="button" title="Toggle details" aria-expanded="' + (expanded?'true':'false') + '"><span class="chev">▾</span></button>' +
+      '</div>' +
+      (item.details ? '<div class="details">' + escapeHtml(item.details) + '</div>' : '') +
+      (item.attachment && item.attachmentSummary ? '<div class="attachment-summary">📎 <span class="mono">' + escapeHtml(item.attachment) + '</span> — ' + escapeHtml(item.attachmentSummary) + '</div>' : '') +
+      '<div class="card-expand">' + renderExpandContent(item) + '</div>' +
+      '<div class="status-row">' +
+        ['open','in_progress','snoozed','done'].map(function(s){
+          var cls = s==='in_progress'?'prog':(s==='snoozed'?'snooze':s);
+          return '<button class="status-pill' + (status===s?' sel '+cls:'') + '" type="button" data-status="' + s + '">' + STATUS_LABEL[s] + '</button>';
+        }).join('') +
+      '</div>' +
+      '<input class="note-input" placeholder="Add a note..." value="' + escapeHtml(note) + '">' +
+    '</div>';
   }
 
   function renderList(items){
     var header = document.getElementById('list-header');
     var listEl = document.getElementById('item-list');
     var shown;
+    var grouped = false;
+    var groupOrder = null;
+
     if(statusFilter === 'all'){
       shown = items.slice();
       header.textContent = 'ALL (' + shown.length + ')';
-    } else if(statusFilter){
-      shown = items.filter(function(i){ return statusOf(i.id) === statusFilter; });
-      header.textContent = STATUS_LABEL[statusFilter].toUpperCase() + ' (' + shown.length + ')';
+    } else if(statusFilter instanceof Set && statusFilter.size){
+      var statusSet = statusFilter;
+      shown = items.filter(function(i){ return statusSet.has(statusOf(i.id)); });
+      if(statusSet.size === 1){
+        var only = Array.from(statusSet)[0];
+        header.textContent = STATUS_LABEL[only].toUpperCase() + ' (' + shown.length + ')';
+      } else {
+        grouped = true;
+        groupOrder = ['open','in_progress','snoozed','done'].filter(function(s){ return statusSet.has(s); });
+        var label = groupOrder.map(function(s){ return STATUS_LABEL[s]; }).join(' + ');
+        header.textContent = label.toUpperCase() + ' (' + shown.length + ')';
+      }
     } else {
       shown = items.filter(function(i){ return statusOf(i.id) !== 'done'; });
       header.textContent = 'ACTIVE (' + shown.length + ')';
@@ -674,60 +753,23 @@
     if(searchQueryRaw){
       header.textContent += ' — matching “' + searchQueryRaw + '”';
     }
-    shown = shown.slice().sort(function(a,b){
-      var ap = (a.directMention || a.actionRequested) ? 0 : 1;
-      var bp = (b.directMention || b.actionRequested) ? 0 : 1;
-      if(ap !== bp) return ap - bp;
-      var ad = a.startDate || '9999-99-99', bd = b.startDate || '9999-99-99';
-      return ad < bd ? -1 : ad > bd ? 1 : 0;
-    });
     if(!shown.length){
       var emptyMsg = searchQueryRaw ? 'No matches for “' + escapeHtml(searchQueryRaw) + '”.' : (weekFilterOn ? 'Nothing dated this week.' : 'Nothing here.');
       listEl.innerHTML = '<div class="empty">' + emptyMsg + '</div>';
       return;
     }
-    listEl.innerHTML = shown.map(function(item){
-      var status = statusOf(item.id);
-      var note = noteOf(item.id);
-      var expanded = expandedIds.has(item.id);
-      var isPriority = !!(item.directMention || item.actionRequested);
-      var mentionBadge = '';
-      if(item.directMention && item.actionRequested){
-        mentionBadge = '<span class="mention-tag">🎯 Direct ask of you</span>';
-      } else if(item.directMention){
-        mentionBadge = '<span class="mention-tag alt">🎯 Mentions you</span>';
-      } else if(item.actionRequested){
-        mentionBadge = '<span class="mention-tag alt">⚡ Action requested</span>';
-      }
-      return '<div class="card' + (expanded?' expanded':'') + (isPriority?' priority':'') + '" data-id="' + escapeHtml(item.id) + '">' +
-        '<div class="card-top">' +
-          mentionBadge +
-          '<span class="src-tag' + (item.manual?' manual':'') + '">' + SRC_ICON[item.source] + ' ' + SRC_LABEL[item.source] + '</span>' +
-          (item.startDate ? '<span class="date-tag mono">' + niceRange(item) + '</span>' : '') +
-          (item.attachment ? (item.link
-            ? '<a class="date-tag attachment-tag" href="' + escapeHtml(item.link) + '" target="_blank" rel="noopener" title="Open source to view this attachment">📎 ' + escapeHtml(item.attachment) + '</a>'
-            : '<span class="date-tag" title="Attachment mentioned on the source message (no link available)">📎 ' + escapeHtml(item.attachment) + '</span>') : '') +
-          '<span class="card-actions">' +
-            (item.link ? '<button class="open-btn" type="button" title="Open source">↗</button>' : '') +
-            '<button class="del-btn" type="button" title="Dismiss">×</button>' +
-          '</span>' +
-        '</div>' +
-        '<div class="title-row">' +
-          '<div class="title">' + escapeHtml(item.title||'Untitled') + '</div>' +
-          '<button class="expand-btn" type="button" title="Toggle details" aria-expanded="' + (expanded?'true':'false') + '"><span class="chev">▾</span></button>' +
-        '</div>' +
-        (item.details ? '<div class="details">' + escapeHtml(item.details) + '</div>' : '') +
-        (item.attachment && item.attachmentSummary ? '<div class="attachment-summary">📎 <span class="mono">' + escapeHtml(item.attachment) + '</span> — ' + escapeHtml(item.attachmentSummary) + '</div>' : '') +
-        '<div class="card-expand">' + renderExpandContent(item) + '</div>' +
-        '<div class="status-row">' +
-          ['open','in_progress','snoozed','done'].map(function(s){
-            var cls = s==='in_progress'?'prog':(s==='snoozed'?'snooze':s);
-            return '<button class="status-pill' + (status===s?' sel '+cls:'') + '" type="button" data-status="' + s + '">' + STATUS_LABEL[s] + '</button>';
-          }).join('') +
-        '</div>' +
-        '<input class="note-input" placeholder="Add a note..." value="' + escapeHtml(note) + '">' +
-      '</div>';
-    }).join('');
+
+    if(grouped){
+      listEl.innerHTML = groupOrder.map(function(s){
+        var groupItems = shown.filter(function(i){ return statusOf(i.id) === s; });
+        if(!groupItems.length) return '';
+        var cls = s==='in_progress'?'prog':(s==='snoozed'?'snooze':s);
+        return '<div class="group-header ' + cls + '">' + STATUS_LABEL[s] + ' (' + groupItems.length + ')</div>' +
+          sortItems(groupItems).map(renderCard).join('');
+      }).join('');
+    } else {
+      listEl.innerHTML = sortItems(shown).map(renderCard).join('');
+    }
 
     listEl.querySelectorAll('.card').forEach(function(cardEl){
       var id = cardEl.getAttribute('data-id');
