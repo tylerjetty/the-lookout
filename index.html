@@ -181,12 +181,21 @@
   .cal-day.pad{visibility:hidden;}
   .cal-day.has-items{background:var(--accent-dim); cursor:pointer;}
   .cal-day .dot{width:6px;height:6px;border-radius:50%;background:var(--accent); margin-top:3px;}
+  .cal-day .range-bars{position:absolute; left:0; right:0; bottom:7px; display:flex; flex-direction:column; align-items:stretch; gap:2px; pointer-events:none;}
+  .cal-day .range-bar{height:3px; background:var(--accent); opacity:.9;}
+  .cal-day .range-bar.cap-start{margin-left:32%; border-radius:3px 0 0 3px;}
+  .cal-day .range-bar.cap-end{margin-right:32%; border-radius:0 3px 3px 0;}
+  .cal-day .range-bar.bridge-left{margin-left:-5px;}
+  .cal-day .range-bar.bridge-right{margin-right:-5px;}
   .cal-day.today{background:var(--accent); border-color:var(--accent); color:#16210f; font-weight:800; box-shadow:0 0 0 4px var(--accent-dim);}
   .cal-day.today .dot{background:#16210f;}
+  .cal-day.today .range-bar{background:#16210f;}
   .cal-day.today .daynum-wrap{position:relative;}
   .cal-day.selected{outline:2px solid var(--text);}
-  .cal-legend{font-size:13.5px; color:var(--muted); margin-top:13px; display:flex; align-items:center; gap:7px;}
+  .cal-legend{font-size:13.5px; color:var(--muted); margin-top:13px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .cal-legend .legend-item{display:flex; align-items:center; gap:7px;}
   .cal-legend .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);}
+  .cal-legend .bar-swatch{width:16px;height:3px;border-radius:3px;background:var(--accent);}
   .day-detail-panel h2.section-title{margin-bottom:14px;}
   #day-detail .empty{color:var(--muted); font-size:12.5px; padding:0; text-align:left;}
   #day-detail .item{margin-bottom:4px; padding:8px; border-radius:8px; cursor:pointer; transition:background .12s;}
@@ -325,7 +334,10 @@
           </div>
           <div class="cal-grid" id="cal-dow-row"></div>
           <div class="cal-grid" id="cal-grid"></div>
-          <div class="cal-legend"><span class="dot"></span> day has a date/deadline (multi-day ranges light up every day between)</div>
+          <div class="cal-legend">
+            <span class="legend-item"><span class="dot"></span> single-day date/deadline</span>
+            <span class="legend-item"><span class="bar-swatch"></span> multi-day item (bar connects across its full range)</span>
+          </div>
         </div>
         <div class="panel day-detail-panel">
           <h2 class="section-title">Day Detail</h2>
@@ -919,15 +931,44 @@
       cell.appendChild(dayNum);
       if(byDate[iso]){
         cell.className += ' has-items';
-        var dot = document.createElement('div'); dot.className='dot'; cell.appendChild(dot);
+        var dayItems = byDate[iso];
+        var rangeItems = dayItems.filter(function(i){ return i.endDate && i.endDate !== i.startDate; });
+        var singleItems = dayItems.filter(function(i){ return !(i.endDate && i.endDate !== i.startDate); });
+        if(rangeItems.length){
+          var barsWrap = document.createElement('div');
+          barsWrap.className = 'range-bars';
+          rangeItems.slice(0,3).forEach(function(it){
+            var days = datesInRange(it);
+            var idx = days.indexOf(iso);
+            var isStart = idx === 0;
+            var isEnd = idx === days.length - 1;
+            var bar = document.createElement('div');
+            bar.className = 'range-bar' +
+              (isStart ? ' cap-start' : ' bridge-left') +
+              (isEnd ? ' cap-end' : ' bridge-right');
+            bar.title = (it.title||'') + ' (' + niceRange(it) + ')';
+            barsWrap.appendChild(bar);
+          });
+          cell.appendChild(barsWrap);
+        }
+        if(singleItems.length){
+          var dot = document.createElement('div'); dot.className='dot'; cell.appendChild(dot);
+        }
         (function(iso, cell){
           cell.addEventListener('click', function(){
             document.querySelectorAll('.cal-day.selected').forEach(function(c){c.classList.remove('selected');});
             cell.classList.add('selected');
             var det = document.getElementById('day-detail');
             det.innerHTML = byDate[iso].map(function(i){
+              var isRange = !!(i.endDate && i.endDate !== i.startDate);
+              var rangeNote = '';
+              if(isRange){
+                var days = datesInRange(i);
+                var idx = days.indexOf(iso) + 1;
+                rangeNote = ' · day ' + idx + ' of ' + days.length;
+              }
               return '<div class="item" data-id="' + escapeHtml(i.id) + '"><div class="t">' + (i.directMention?'🎯 ':'') + escapeHtml(i.title||'Untitled') + '</div>' +
-                '<div class="d">' + niceRange(i) + (i.details ? ' — ' + escapeHtml(i.details) : '') + '</div>' +
+                '<div class="d">' + niceRange(i) + rangeNote + (i.details ? ' — ' + escapeHtml(i.details) : '') + '</div>' +
                 '<div class="go">View in Overview →</div></div>';
             }).join('');
             det.querySelectorAll('.item').forEach(function(el){
